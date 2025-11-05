@@ -15,5 +15,5 @@ venv/
 *.tmp
 
 # Ignore specific files
-grouAssignment.py
+groupAssignment.py
 inputMatrixCreation.txt
