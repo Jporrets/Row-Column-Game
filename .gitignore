@@ -1,0 +1,19 @@
+# Ignore Python cache
+__pycache__/
+**/__pycache__/
+*.py[cod]
+
+# Virtual environment
+venv/
+.env/
+
+# VS Code settings
+.vscode/
+
+# Logs or temporary files
+*.log
+*.tmp
+
+# Ignore specific files
+grouAssignment.py
+inputMatrixCreation.txt
