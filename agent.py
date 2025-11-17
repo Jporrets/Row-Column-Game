@@ -102,9 +102,8 @@ def random_game(board: Board):
         
         # Logic to make moves
         try:
-            move_choices = board.available_moves_array()
-            rng = np.random.default_rng()
-            move = tuple(move_choices[rng.integers(len(move_choices))])
+            
+            move = weighted_choice(board)
             board.make_move(move[0], move[1])
         except:
             raise TabError('Couldnt make move!')
@@ -117,7 +116,7 @@ def mc_make_choice(board:Board):
     for move in possible_moves :
         temp_board = copy.deepcopy(board)
         temp_board.make_move(move[0], move[1])
-        eval = monte_carlo_eval(temp_board, 10000)
+        eval = monte_carlo_eval(temp_board, 1000)
         eval_array.append(eval * - 1)
 
     max_index = np.argmin(eval_array)
@@ -127,4 +126,28 @@ def mc_make_choice(board:Board):
     # print(f'Best move looks to be: {possible_moves[max_index]}, with eval of: {min(eval_array) * -1}')
     return possible_moves[max_index]
 
+def weighted_choice(board:Board):
+    available_m = board.available_moves_array()
+    a1 = BestPointsMoveAgent().select_move(board)
+    a2 = BpmDepthAgent().select_move(board)
 
+    lenght = len(available_m)
+    normal_weight = (1 - 0.7) / lenght
+
+    weights = []
+    for move in available_m:
+
+        if move == a1 and move == a2:
+            weights.append(0.7)
+        elif move == a1 and move != a2:
+            weights.append(0.5)
+        elif move == a2 and move != a1:
+            weights.append(0.2)
+        else:
+            weights.append(normal_weight)
+    
+    weights = np.array(weights)
+
+    move = tuple(available_m[np.random.choice(range(len(available_m)), p=weights/weights.sum())])
+    return move
+    
