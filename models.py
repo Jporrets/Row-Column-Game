@@ -7,14 +7,15 @@ class Board:
         self.seed = seed
         self.player1 = player1
         self.player2 = player2
-        self.turn: Player = player1 # player1 is first mover
+        self.turn: Player = player1 # Player1 is first mover
 
         # Automatically create a random board upon init
         if self.seed is not None:
-            np.random.seed(seed)
+            np.random.seed(self.seed)
         self.table = np.random.randint(1, 10, size=(self.rows, self.cols))
 
         self.last_move = None
+        self.history = [] # Array for keeping track of moves type: (row, col, value, player)
 
     def get_board(self) -> np.ndarray:
         """
@@ -78,7 +79,8 @@ class Board:
     def make_move(self, row: int, col: int) -> None:
         """
         Records a player's move. If the move is valid, it adds the points from the cell to the player's score. It sets the cell to 0. Automatically switches player's turn.
-
+        Records the move to history.
+        
         Parameters:
             row (int): Row index of the move
             col (int): Column index of the move
@@ -92,6 +94,7 @@ class Board:
         """
         if self.is_move_valid(row, col):
             points = self.table[row, col]
+            self.history.append((row, col, points, self.turn))
             self.table[row, col] = 0
             self.turn.add_to_score(points)
             self.last_move = (row, col)
@@ -165,6 +168,34 @@ class Board:
         if score_p2 > score_p1: return -1
         if score_p1 == score_p2: return 0
         else : raise TabError('Error in is_winner')
+    
+    def undo_last_move(self) -> None:
+        """
+        Undo the last move. It restores the value to the cell, the turn, and the player's score. Updates the history to remove the move unmade.
+
+        Parameters: 
+            None
+
+        Returns: 
+            None
+        
+        Raises:
+            RuntimeError: if the history is empty
+        """
+
+        if not self.history:
+            raise RuntimeError('No moves to undo')
+        
+        row, col, value, player = self.history.pop()
+
+        self.table[row, col] = value
+        player.score = max(0, player.score - value)
+        self.turn = player
+
+        if self.history:
+            self.last_move = (self.history[-1][0], self.history[-1][1])
+        else: 
+            self.last_move = None
 
 
 
