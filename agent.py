@@ -3,6 +3,9 @@ from models import Board, Player
 import copy
 
 class Agent:
+    def __init__(self, player: Player = None):
+        self.player = player # Keep track of which player the agent is assigned to. Used for view integration and clarity. # No effects.
+        
     def select_move(self, board: Board) :
         """Return a move given the current board state."""
         raise TypeError('Parent class agent has no method for selecting a move. Use subclasses')
@@ -66,7 +69,7 @@ class BpmDepthAgent(Agent):
 
 class MinimaxAgent(Agent):
 
-    def select_move(self, board: Board, depth: int):
+    def select_move(self, board: Board, depth: int = 10):
         best_score = float('-inf')
         best_move_found = None
 
