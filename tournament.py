@@ -14,10 +14,12 @@ def a_vs_a_same_board(first_agent: agent.Agent, second_agent: agent.Agent, board
 
     while board.is_there_move_possible():
         if board.turn == first_agent_player :
-            move = agent.mc_make_choice(board) ### MTC AGENT
+            print('First agent turn')
+            move = first_agent.select_move(board)
             board.make_move(move[0], move[1])
             moves_played['First Agent'] = moves_played['First Agent'] + 1
         elif board.turn == second_agent_player :
+            print('Second agent turn')
             move = second_agent.select_move(board)
             board.make_move(move[0], move[1])
             moves_played['Second Agent'] = moves_played['Second Agent'] + 1
@@ -41,8 +43,8 @@ def torunament(n_sim: int, fa: agent.Agent, sa: agent.Agent, b_size:int):
 table = []
 n_sim = 20
 first_agent = agent.BpmDepthAgent()
-second_agent = agent.BestPointsMoveAgent()
-size = 10
+second_agent = agent.MinimaxAgent()
+size = 5
 
 
 wins_dict = torunament(n_sim, first_agent, second_agent, size)

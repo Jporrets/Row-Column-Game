@@ -76,10 +76,12 @@ class MinimaxAgent(Agent):
         alpha = float('-inf')
         beta = float('inf')
 
+        isMax = True if board.player1 == self.player else False
+
         for move in board.available_moves_array():
             board.make_move(move[0], move[1]) #
 
-            score = self.minimax(board, False, depth - 1, alpha, beta)
+            score = self.minimax(board, isMax, depth - 1, alpha, beta) #
             print(f'Score for the move {move} is {score}')
 
             board.undo_last_move() #
@@ -95,7 +97,7 @@ class MinimaxAgent(Agent):
 
         if depth == 0 or not board.is_there_move_possible():
             # return self.static_evaluation(board, isMax)
-            return self.static_evaluation(board, isMax)
+            return self.handcrafted_evaluation(copy.deepcopy(board), isMax)
         
         if isMax :
             maxEval = float('-inf')
@@ -118,56 +120,45 @@ class MinimaxAgent(Agent):
                 beta = min(beta, eval)
                 if beta <= alpha: break
             return minEval
+    
+    def handcrafted_evaluation(self, board: Board, isMax: bool):
+        """
+        A handcrafted evaluation function that considers multiple factors.
+        The function evaluates the board for the current player.
+        """
+        # First parameter: score difference
+        player1 = board.turn # Evaluates for current player
+        player2 = board.player2 if player1 != board.player2 else board.player1
+        score_diff = player1.get_score() - player2.get_score()
 
-    def static_evaluation(self, board: Board, isMax: bool):
-
-        hpm_agent = BestPointsMoveAgent()
-        high_move = hpm_agent.select_move(board)
-        if high_move.size == 0: return 0
-
-        score = board.get_board()[high_move[0], high_move[1]]
-        # print(f'Evaluation for the position is: {score}')
-
-        if isMax:
-            return score
-        else:
-            return (-1 * score)
-        
-    def depth6Eval(self, board: Board, isMax: bool):
-        depth = 6 # Tournaments show it to be optimal
-
+        # Second parameter: number of available moves
         available_moves = board.available_moves_array()
-
-        max_diff = float('-inf')
-
-        hpm_agent = BestPointsMoveAgent()
-
-        for index, move in enumerate(available_moves) :
-            working_board = copy.deepcopy(board)
-            player1 = working_board.turn
-            player2 = working_board.player2 if player1 != working_board.player2 else working_board.player1
-
-            working_board.make_move(move[0], move[1])
-
-
-            for _ in range(depth) :
-                if not working_board.is_there_move_possible(): break
-
-                simulated_move = hpm_agent.select_move(working_board)
-                working_board.make_move(simulated_move[0], simulated_move[1])
-            
-            p1_score = player1.get_score() 
-            p2_score = player2.get_score()
-            diff = p1_score - p2_score
-
-            max_diff = max(diff, max_diff)
+        num_moves = len(available_moves)
         
-        if isMax: 
-            return max_diff
-        else:
-            return (-1*max_diff)
+        # Third parameter: highest points move diff (reward)
+        high_move_diff = 0
+        hpm_agent = BestPointsMoveAgent()
+        if(len(board.available_moves_array()) > 0):
+            high_move = hpm_agent.select_move(board)
+            high_move_points = board.get_board()[high_move[0], high_move[1]]
+            board.make_move(high_move[0], high_move[1])
+            high_move_diff = high_move_points
+            if (len(board.available_moves_array()) > 0):
+                opponent_high_move = hpm_agent.select_move(board)
+                opponent_high_move_points = board.get_board()[opponent_high_move[0], opponent_high_move[1]]
+                board.undo_last_move()
+                high_move_diff = high_move_points - opponent_high_move_points
 
+        # Fourth parameter: 
 
+        # Weights and final eval
+        w_score = 1.0
+        w_mobility = 0.4
+        w_high_move_diff = 0.5
+        final_eval = (w_score * score_diff) + (w_mobility * num_moves) + (w_high_move_diff * high_move_diff)
+
+        # print(f'Evaluation components -> Score Diff: {score_diff}, Num Moves: {num_moves}, High Move Diff: {high_move_diff} | Final Eval: {final_eval}')
+        return final_eval if isMax else -final_eval
 
 # Monte Carlo Based agent
 
