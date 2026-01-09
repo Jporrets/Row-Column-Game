@@ -3,8 +3,9 @@ from models import Board, Player
 import copy
 
 class Agent:
-    def __init__(self, player: Player = None):
-        self.player = player # Keep track of which player the agent is assigned to. Used for view integration and clarity. # No effects.
+    def __init__(self, player: Player = None, name: str = None):
+        self.player = player # Keep track of which player the agent is assigned to. Used for view handling.
+        self.name = name or self.__class__.__name__
         
     def select_move(self, board: Board) :
         """Return a move given the current board state."""
@@ -82,7 +83,6 @@ class MinimaxAgent(Agent):
             board.make_move(move[0], move[1]) #
 
             score = self.minimax(board, isMax, depth - 1, alpha, beta) #
-            print(f'Score for the move {move} is {score}')
 
             board.undo_last_move() #
             if score > best_score:

@@ -4,30 +4,31 @@ from tkinter import messagebox
 from models import Board, Player
 import agent
 from copy import deepcopy
+import time
 
 class GameGUI:
-    def __init__(self, board: 'Board', agent1: agent.Agent = None, agent2: agent.Agent = None):
+    def __init__(self, master: tk.Tk, board: 'Board', agent1: agent.Agent = None, agent2: agent.Agent = None):
         # Initialize game state, players, and agents
         self.board = board
         self.agent1 = agent1
         self.agent2 = agent2
-        self.root = tk.Tk()
-        self.root.title("Game")
+        self.master = master
+        self.master.title("Game")
 
         # UI Components: Labels for player info, game info, and score
-        self.players_info = tk.Label(self.root, font=("Arial", 14, "bold"))
+        self.players_info = tk.Label(self.master, font=("Arial", 14, "bold"))
         self.players_info.pack(pady=5)
 
-        self.game_info = tk.Label(self.root, font=("Arial", 14))
+        self.game_info = tk.Label(self.master, font=("Arial", 14))
         self.game_info.pack(pady=5)
 
-        self.board_frame = tk.Frame(self.root)
+        self.board_frame = tk.Frame(self.master)
         self.board_frame.pack()
 
         self.buttons = [[None for _ in range(board.cols)]
                         for _ in range(board.rows)]
 
-        self.score_info = tk.Label(self.root, font=("Arial", 14))
+        self.score_info = tk.Label(self.master, font=("Arial", 14))
         self.score_info.pack(pady=5)
 
         # Initialize the game UI and start the first move
@@ -116,6 +117,9 @@ class GameGUI:
 
     def get_agent_move(self):
         """Get the agent's move if it's the agent's turn."""
+        # Small delay for better UX
+        time.sleep(0.5)
+
         if not self.board.is_there_move_possible():
             print('No moves available, skipping agent turn...')
             return
@@ -166,7 +170,7 @@ class GameGUI:
         elif winner == 0:
             messagebox.showinfo("Game Over", "It's a draw!")
         
-        self.root.quit()  # Close the game window after showing the result
+        self.master.quit()  # Close the game window after showing the result
 
     ######
     # Game Loop
@@ -174,14 +178,4 @@ class GameGUI:
 
     def run(self):
         """Start the tkinter main loop."""
-        self.root.mainloop()
-
-#
-p2 = Player('Human', False)
-p1 = Player('Minimax Agent', True)
-bb = Board(5, p1, p2)
-agent1 = agent.MinimaxAgent(p1)
-
-g = GameGUI(bb, agent1=agent1)
-
-g.run()
+        self.master.mainloop()

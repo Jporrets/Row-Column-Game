@@ -9,7 +9,7 @@ p2 = Player('HPM Agent', True)
 bb = Board(5, p1, p2, 8)
 ai = agent.MinimaxAgent()
 
-test_ai = agent.MinimaxTEST()
+# test_ai = agent.MinimaxTEST()
 
 # print(tb.tabulate(bb.get_board(), tablefmt='fancy_grid'))
 
@@ -69,7 +69,7 @@ def test_agent_performance(board: Board, agent: agent.Agent, depth: int):
     print(f"Best move at depth {depth}: {move}")
     print("-" * 50)
 
-# print('Performance Test for Minimax')
-# test_agent_performance(deepcopy(bb), ai, 10)
-print('\n Performance Test for TESTMINI')
-test_agent_performance(deepcopy(bb), test_ai, 10)
+print('Performance Test for Minimax')
+test_agent_performance(deepcopy(bb), ai, 10)
+# print('\n Performance Test for TESTMINI')
+# test_agent_performance(deepcopy(bb), test_ai, 10)
