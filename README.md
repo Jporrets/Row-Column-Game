@@ -37,3 +37,10 @@ This project implements several AI strategies to challenge the player:
     ```bash
     python main.py
     ```
+
+## Tournament
+The tournament file is used to test algorithms against one another. 
+Outuput of two tournaments on boards with size 5:
+<img width="1000" height="600" alt="Figure_1" src="https://github.com/user-attachments/assets/e79e2d10-eaa1-4fdd-aa54-d4075fd38e10" />
+<img width="1000" height="600" alt="Figure_2" src="https://github.com/user-attachments/assets/8c82f692-8907-4844-b4f5-c4451ddf5301" />
+The small board size makes it so that there is a remarkable advantage for the first mover.
