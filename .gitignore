@@ -18,3 +18,9 @@ venv/
 groupAssignment.py
 inputMatrixCreation.txt
 GroupAssignment/
+
+# PyInstaller
+build/
+dist/
+*.spec
+__pycache__/
