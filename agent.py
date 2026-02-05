@@ -12,24 +12,20 @@ class Agent:
         raise TypeError('Parent class agent has no method for selecting a move. Use subclasses')
 
 class RandomAgent(Agent):
+    def __init__(self, player: Player = None, name: str = None):
+        super().__init__(player, name)
+        self.rng = np.random.default_rng()
+
     def select_move(self, board: Board):
         moves = board.available_moves_array()
-        rng = np.random.default_rng()
-        return tuple(moves[rng.integers(len(moves))])
+        return tuple(moves[self.rng.integers(len(moves))])
 
 class BestPointsMoveAgent(Agent):
 
     def select_move(self, board: Board):
         moves = board.available_moves_array()
-        max_points = float('-inf')
-        max_index = None
-
-
-        for index, move in enumerate(moves):
-            points = board.get_board()[move[0], move[1]]
-            if points > max_points: 
-                max_points = points
-                max_index = index
+        points = board.get_board()[moves[:, 0], moves[:, 1]]
+        max_index = np.argmax(points)
         return moves[max_index]
 
 class BpmDepthAgent(Agent):
@@ -97,7 +93,7 @@ class MinimaxAgent(Agent):
 
         if depth == 0 or not board.is_there_move_possible():
             # return self.static_evaluation(board, isMax)
-            return self.handcrafted_evaluation(copy.deepcopy(board), isMax)
+            return self.handcrafted_evaluation(board, isMax)
         
         if isMax :
             maxEval = float('-inf')
@@ -138,16 +134,16 @@ class MinimaxAgent(Agent):
         # Third parameter: highest points move diff (reward)
         high_move_diff = 0
         hpm_agent = BestPointsMoveAgent()
-        if(len(board.available_moves_array()) > 0):
+        if len(board.available_moves_array()) > 0:
             high_move = hpm_agent.select_move(board)
             high_move_points = board.get_board()[high_move[0], high_move[1]]
             board.make_move(high_move[0], high_move[1])
             high_move_diff = high_move_points
-            if (len(board.available_moves_array()) > 0):
+            if len(board.available_moves_array()) > 0:
                 opponent_high_move = hpm_agent.select_move(board)
                 opponent_high_move_points = board.get_board()[opponent_high_move[0], opponent_high_move[1]]
-                board.undo_last_move()
                 high_move_diff = high_move_points - opponent_high_move_points
+            board.undo_last_move()
 
         # Fourth parameter: 
 

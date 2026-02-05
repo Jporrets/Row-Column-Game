@@ -133,21 +133,22 @@ class Board:
         """
         table = self.table
 
-        if self.last_move is None: 
-            moves_array = np.argwhere(table != 0)
-            return moves_array
+        if self.last_move is None:
+            return np.argwhere(table != 0)
 
         last_row_index, last_col_index = self.last_move
-        last_row = table[last_row_index, :]
-        last_column = table[:, last_col_index]
+        row_cols = np.nonzero(table[last_row_index, :])[0]
+        col_rows = np.nonzero(table[:, last_col_index])[0]
 
-        new_table = np.full_like(table, -1)
-        new_table[last_row_index, :] = last_row
-        new_table[:, last_col_index] = last_column
+        row_coords = np.column_stack((np.full(row_cols.shape, last_row_index), row_cols))
+        col_coords = np.column_stack((col_rows, np.full(col_rows.shape, last_col_index)))
 
-        moves_array = np.argwhere((new_table != -1) & (new_table != 0))
+        if row_coords.size == 0:
+            return col_coords
+        if col_coords.size == 0:
+            return row_coords
 
-        return moves_array
+        return np.unique(np.vstack((row_coords, col_coords)), axis=0)
     
     def is_winner(self, player1: 'Player', player2: 'Player'):
         """
