@@ -3,10 +3,12 @@ import agent
 from models import Board, Player
 from copy import deepcopy
 import time
+import cProfile
+import pstats
 
 p1 = Player('Minimax', True)
 p2 = Player('HPM Agent', True)
-bb = Board(5, p1, p2, 8)
+bb = Board(10, p1, p2, 8)
 ai = agent.MinimaxAgent()
 
 # test_ai = agent.MinimaxTEST()
@@ -50,26 +52,42 @@ ai = agent.MinimaxAgent()
 # print(f'{p1.name} = {p1.score} ||||| {p2.name} = {p2.score} ')
 
 # Time test
-def test_agent_performance(board: Board, agent: agent.Agent, depth: int):
-    """
-    Tests the performance of an agent's algorithm for the given board state and depth.
-    """
-    print(f"Testing Agent at depth {depth}...")
+# def test_agent_performance(board: Board, agent: agent.Agent, depth: int):
+#     """
+#     Tests the performance of an agent's algorithm for the given board state and depth.
+#     """
+#     print(f"Testing Agent at depth {depth}...")
 
-    # Start measuring time for select_move (which calls minimax)
-    start_time = time.time()
-    move = agent.select_move(deepcopy(board), depth)
-    end_time = time.time()
-    select_move_time = end_time - start_time
+#     # Start measuring time for select_move (which calls minimax)
+#     start_time = time.time()
+#     move = agent.select_move(deepcopy(board), depth)
+#     end_time = time.time()
+#     select_move_time = end_time - start_time
 
-    print(f"Time taken for select_move at depth {depth}: {select_move_time:.4f} seconds")
+#     print(f"Time taken for select_move at depth {depth}: {select_move_time:.4f} seconds")
 
 
-    # Optionally print the best move for validation
-    print(f"Best move at depth {depth}: {move}")
-    print("-" * 50)
+#     # Optionally print the best move for validation
+#     print(f"Best move at depth {depth}: {move}")
+#     print("-" * 50)
 
-print('Performance Test for Minimax')
-test_agent_performance(deepcopy(bb), ai, 10)
-# print('\n Performance Test for TESTMINI')
-# test_agent_performance(deepcopy(bb), test_ai, 10)
+# print('Performance Test for Minimax')
+# test_agent_performance(deepcopy(bb), ai, 10)
+# # print('\n Performance Test for TESTMINI')
+# # test_agent_performance(deepcopy(bb), test_ai, 10)
+
+# Profiling test
+
+profiler = cProfile.Profile()
+profiler.enable()
+
+# Run the code you want to profile here
+
+move = ai.select_move(deepcopy(bb), 8)
+profiler.disable()
+
+# Print profiling results
+
+print("\nProfiling Results:")
+ps = pstats.Stats(profiler).sort_stats('cumulative')
+ps.print_stats(20)

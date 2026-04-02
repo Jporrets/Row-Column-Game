@@ -70,7 +70,7 @@ class BpmDepthAgent(Agent):
 
 class MinimaxAgent(Agent):
 
-    def select_move(self, board: Board, depth: int = 10):
+    def select_move(self, board: Board, depth: int = 12):
         best_score = float('-inf')
         best_move_found = None
 
@@ -89,75 +89,97 @@ class MinimaxAgent(Agent):
                 best_score = score
                 best_move_found = move
 
-            alpha = max(alpha, score)
+            alpha = max(alpha, best_score)
 
         return best_move_found
 
     def minimax(self, board: Board, isMax: bool, depth: int, alpha: float = float('-inf'), beta: float = float('inf')):
 
-        if depth == 0 or not board.is_there_move_possible():
-            # return self.static_evaluation(board, isMax)
-            return self.handcrafted_evaluation(copy.deepcopy(board), isMax)
+        # Transposition table lookup
+        h = board.hash_board_state()
+        entry = board.transposition_table.get(h)
+
+        if entry is not None and entry['depth'] >= depth:
+            if entry['flag'] == 'EXACT':
+                return entry['value']
+            elif entry['flag'] == 'LOWERBOUND':
+                alpha = max(alpha, entry['value'])
+            elif entry['flag'] == 'UPPERBOUND':
+                beta = min(beta, entry['value'])
+            
+            if alpha >= beta:
+                return entry['value']
+            
         
+        # Terminal node or depth limit reached
+        if depth == 0 or not board.is_there_move_possible():
+            val = self.quick_evaluation(board, isMax)
+            board.transposition_table[h] = {'value': val, 'depth': depth, 'flag': 'EXACT'}
+            return val
+        
+        # Move generation and ordering
+        moves = board.available_moves_array()
+        values = board.table[moves[:, 0], moves[:, 1]]
+        moves = moves[np.argsort(-values)] # Sort moves by their point value in descending order for better pruning
+
+        original_alpha = alpha
+        original_beta = beta
+
         if isMax :
-            maxEval = float('-inf')
-            for move in board.available_moves_array():
-                board.make_move(move[0], move[1]) #
+            value = float('-inf')
+            for move in moves:
+                board.make_move(move[0], move[1])
                 eval = self.minimax(board, False, depth - 1, alpha, beta)
-                board.undo_last_move() #
-                maxEval = max(maxEval, eval)
-                alpha = max(alpha, eval)
+                board.undo_last_move()
+
+                value = max(value, eval)
+                alpha = max(alpha, value)
                 if beta <= alpha: break
-            return maxEval
+            
         else :
-            minEval = float('inf')
-            for move in board.available_moves_array():
-                
-                board.make_move(move[0], move[1]) #
+            value = float('inf')
+            for move in moves:
+                board.make_move(move[0], move[1])
                 eval = self.minimax(board, True, depth - 1, alpha, beta)
-                board.undo_last_move() #
-                minEval = min(minEval, eval)
-                beta = min(beta, eval)
+                board.undo_last_move()
+
+                value = min(value, eval)
+                beta = min(beta, value)
                 if beta <= alpha: break
-            return minEval
-    
-    def handcrafted_evaluation(self, board: Board, isMax: bool):
+            
+        
+        if value <= original_alpha:
+            flag = 'UPPERBOUND'
+        elif value >= original_beta:
+            flag = 'LOWERBOUND'
+        else:
+            flag = 'EXACT'
+
+        board.transposition_table[h] = {
+            'value': value,
+            'depth': depth,
+            'flag': flag
+        }
+        return value
+
+    def quick_evaluation(self, board: Board, isMax: bool):
         """
-        A handcrafted evaluation function that considers multiple factors.
+        A quick evaluation function that considers only the score difference.
         The function evaluates the board for the current player.
         """
-        # First parameter: score difference
-        player1 = board.turn # Evaluates for current player
+
+        # Players
+        player1 = board.turn
         player2 = board.player2 if player1 != board.player2 else board.player1
+
+        # 1. Score difference
         score_diff = player1.get_score() - player2.get_score()
 
-        # Second parameter: number of available moves
-        available_moves = board.available_moves_array()
-        num_moves = len(available_moves)
-        
-        # Third parameter: highest points move diff (reward)
-        high_move_diff = 0
-        hpm_agent = BestPointsMoveAgent()
-        if(len(board.available_moves_array()) > 0):
-            high_move = hpm_agent.select_move(board)
-            high_move_points = board.get_board()[high_move[0], high_move[1]]
-            board.make_move(high_move[0], high_move[1])
-            high_move_diff = high_move_points
-            if (len(board.available_moves_array()) > 0):
-                opponent_high_move = hpm_agent.select_move(board)
-                opponent_high_move_points = board.get_board()[opponent_high_move[0], opponent_high_move[1]]
-                board.undo_last_move()
-                high_move_diff = high_move_points - opponent_high_move_points
-
-        # Fourth parameter: 
-
-        # Weights and final eval
+        # Weights
         w_score = 1.0
-        w_mobility = 0.4
-        w_high_move_diff = 0.5
-        final_eval = (w_score * score_diff) + (w_mobility * num_moves) + (w_high_move_diff * high_move_diff)
 
-        # print(f'Evaluation components -> Score Diff: {score_diff}, Num Moves: {num_moves}, High Move Diff: {high_move_diff} | Final Eval: {final_eval}')
+        final_eval = (w_score * score_diff)
+
         return final_eval if isMax else -final_eval
 
 # Monte Carlo Based agent
@@ -176,7 +198,6 @@ def monte_carlo_eval(board: Board, n_sim:int):
     eval = total_score / n_sim
     #print(f'Evaluation of current position is:', eval)
     return eval
-        
 
 def random_game(board: Board):
     player1 = board.turn

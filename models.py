@@ -17,6 +17,8 @@ class Board:
         self.last_move = None
         self.history = [] # Array for keeping track of moves type: (row, col, value, player)
 
+        self.transposition_table = {} # Dictionary for storing previously evaluated board states and their scores for memoization
+
     def get_board(self) -> np.ndarray:
         """
         Returns the current state of the board
@@ -197,6 +199,22 @@ class Board:
         else: 
             self.last_move = None
 
+    def hash_board_state(self) -> int:
+        """
+        Creates a unique hash for the current board state, including the table configuration, current turn, and player scores.
+
+        Parameters:
+            None
+        Returns:
+            int: A unique hash representing the current board state
+        """
+        board_state = (
+            self.table.tobytes(),  # Convert the board to bytes for hashing
+            self.turn.name,        # Include the current player's name
+            self.player1.get_score(),  # Include player1's score
+            self.player2.get_score()   # Include player2's score
+        )
+        return hash(board_state)  # Return the hash as a string
 
 
 class Player:
