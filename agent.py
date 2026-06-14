@@ -1,6 +1,8 @@
 import numpy as np
 from models import Board, Player
 import copy
+import mcts_implementation
+from numba import njit
 
 class Agent:
     def __init__(self, player: Player = None, name: str = None):
@@ -182,81 +184,27 @@ class MinimaxAgent(Agent):
 
         return final_eval if isMax else -final_eval
 
-# Monte Carlo Based agent
+# MCTS proper
 
-def monte_carlo_eval(board: Board, n_sim:int):
-    """
-    The function provides evaluation of a position. It should be used after the inteded move to evaluate has been played.
-    """
+class MCTSAgent(Agent):
+    def select_move(self, board: Board):
+        root_state = board.get_board()
 
-    total_score = 0
-    #b = copy.deepcopy(board) ### NOT ANOTHER DEEPCOPY
-
-    for tries in range(n_sim):
-        total_score = total_score + random_game(copy.deepcopy(board)) 
-    
-    eval = total_score / n_sim
-    #print(f'Evaluation of current position is:', eval)
-    return eval
-
-def random_game(board: Board):
-    player1 = board.turn
-    player2 = board.player2 if player1 != board.player2 else board.player1
-
-    while True:
-
-        if not board.is_there_move_possible():
-            winner = board.is_winner(player1=player1, player2=player2)
-            return winner
-        
-        # Logic to make moves
-        try:
-            
-            move = weighted_choice(board)
-            board.make_move(move[0], move[1])
-        except:
-            raise TabError('Couldnt make move!')
-
-def mc_make_choice(board:Board):
-
-    possible_moves = board.available_moves_array()
-    eval_array = []
-
-    for move in possible_moves :
-        temp_board = copy.deepcopy(board)
-        temp_board.make_move(move[0], move[1])
-        eval = monte_carlo_eval(temp_board, 1000)
-        eval_array.append(eval * - 1)
-
-    max_index = np.argmin(eval_array)
-    # print(possible_moves)
-    # print(max_index)
-    # print('array:', eval_array)
-    # print(f'Best move looks to be: {possible_moves[max_index]}, with eval of: {min(eval_array) * -1}')
-    return possible_moves[max_index]
-
-def weighted_choice(board:Board):
-    available_m = board.available_moves_array()
-    a1 = BestPointsMoveAgent().select_move(board)
-    a2 = BpmDepthAgent().select_move(board)
-
-    lenght = len(available_m)
-    normal_weight = (1 - 0.7) / lenght
-
-    weights = []
-    for move in available_m:
-
-        if move == a1 and move == a2:
-            weights.append(0.7)
-        elif move == a1 and move != a2:
-            weights.append(0.5)
-        elif move == a2 and move != a1:
-            weights.append(0.2)
+        if board.last_move is None:
+            last_row, last_col = -1, -1
         else:
-            weights.append(normal_weight)
-    
-    weights = np.array(weights)
+            last_row, last_col = board.last_move
 
-    move = tuple(available_m[np.random.choice(range(len(available_m)), p=weights/weights.sum())])
-    return move
-    
+        best_r, best_c = mcts_implementation.mcts_search(
+            root_state,
+            iterations     = 1000000,
+            root_player    = 100,
+            max_moves      = board.rows * board.cols,
+            root_last_row  = last_row,
+            root_last_col  = last_col,
+        )
+
+        if best_r == -1:
+            raise RuntimeError('MCTS failed to find a move!')
+        
+        return (best_r, best_c)

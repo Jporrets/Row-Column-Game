@@ -1,5 +1,6 @@
 import tabulate as tb
 import agent
+import mcts_implementation
 from models import Board, Player
 from copy import deepcopy
 import time
@@ -83,7 +84,7 @@ profiler.enable()
 
 # Run the code you want to profile here
 
-move = ai.select_move(deepcopy(bb), 8)
+move = ai.select_move(deepcopy(bb), 6)
 profiler.disable()
 
 # Print profiling results
@@ -91,3 +92,22 @@ profiler.disable()
 print("\nProfiling Results:")
 ps = pstats.Stats(profiler).sort_stats('cumulative')
 ps.print_stats(20)
+
+# DATA
+# print('\n\n\n\nDATA:')
+# print(f'{type(bb.get_board())}')
+# print(f'{bb.get_board()[1,1].dtype}')
+
+# # MCTS TESTS
+# mcts_agent = mcts_fixed.MCTSAgent()
+# profiler = cProfile.Profile()
+# profiler.enable()
+
+# move = mcts_agent.select_move(deepcopy(bb))
+
+
+# profiler.disable()
+
+# print("\nProfiling Results:")
+# ps = pstats.Stats(profiler).sort_stats('cumulative')
+# ps.print_stats(40)

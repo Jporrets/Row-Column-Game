@@ -23,7 +23,8 @@ def start_game():
         "Minimax": agent.MinimaxAgent,
         "Random": agent.RandomAgent,
         "Best Points Move": agent.BestPointsMoveAgent,
-        "BPM Depth": agent.BpmDepthAgent
+        "BPM Depth": agent.BpmDepthAgent,
+        "MCTS": agent.MCTSAgent
     }
     
     # Initialize variables to None

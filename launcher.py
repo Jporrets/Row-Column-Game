@@ -23,6 +23,7 @@ class GameSetup(tk.Toplevel):
                             "Minimax",
                             "Best Points Move",
                             "BPM Depth",
+                            "MCTS"
                         ]).pack()
 
         # 3. Board Size Selection

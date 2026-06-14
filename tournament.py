@@ -2,6 +2,7 @@ import tabulate as tb
 from models import Player, Board
 import agent
 import matplotlib.pyplot as plt
+import time
 
 ####################################
 
@@ -11,9 +12,9 @@ import matplotlib.pyplot as plt
 # If you want to customize the agents or the number of simulations, modify the following parameters.
 
 n_sim = 20 ## Number of games to be played in the tournament
-first_agent = agent.BpmDepthAgent()
-second_agent = agent.MinimaxAgent()
-size = 4 ## Board size
+first_agent = agent.MinimaxAgent()
+second_agent = agent.MCTSAgent()
+size = 7 ## Board size
 
 
 ####################################
@@ -48,13 +49,33 @@ def torunament(n_sim: int, fa: agent.Agent, sa: agent.Agent, b_size:int):
     print(f'\nDepending on the board size and agent complexity, this may take a while...\n')
 
     wins_dict = {fa.name : 0, sa.name : 0, 'draw' : 0}
+    start_time = time.time()
 
-    for _ in range(n_sim) :
+    for i in range(n_sim) :
         res = a_vs_a_same_board(fa, sa, b_size)
 
         if res == 1 : wins_dict[fa.name] = wins_dict[fa.name] + 1
         elif res == -1 : wins_dict[sa.name] = wins_dict[sa.name] + 1
         elif res == 0 : wins_dict['draw'] = wins_dict['draw'] + 1
+
+        completed = i + 1
+        elapsed = time.time() - start_time
+        avg_time = elapsed / completed
+        remaining = avg_time * (n_sim - completed)
+        percent = completed / n_sim * 100
+
+        print(
+            f'\rCompleted {completed}/{n_sim} games '
+            f'({percent:.1f}%) | '
+            f'{fa.name}: {wins_dict[fa.name]} | '
+            f'{sa.name}: {wins_dict[sa.name]} | '
+            f'Draws: {wins_dict["draw"]} | '
+            f'ETA: {remaining:.1f}s',
+            end='',
+            flush=True
+        )
+
+    print()
 
     return wins_dict
 
