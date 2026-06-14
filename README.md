@@ -23,6 +23,7 @@ This project implements several AI strategies to challenge the player:
 * **Best Points Move (BPM):** An agent that always picks the first iteration of the highest possible value move.
 * **BPM Depth:** A smarter version of the BPM agent that looks one step ahead to avoid "traps" (high-value moves that open up even better moves for the opponent). Tournaments show that a depth of 6 is optimal. Highet depths usually lead to allucinations that diminish effectivness.
 * **Minimax Agent:** Uses a recursive search tree to simulate future possibilities, playing optimally to maximize its score while minimizing yours. Uses alpha beta pruning.
+* **MCTS Agent** Based on monte carlo tree search. This agent is of comparable capabilities to the minimax agent while allowing for less computational complexity.
 
 ## 🚀 Installation
 
@@ -40,7 +41,9 @@ This project implements several AI strategies to challenge the player:
 
 ## Tournament
 The tournament file is used to test algorithms against one another. 
-Outuput of two tournaments on boards with size 5:
+Outuput of three tournaments on boards with sizes 5,5,6:
 <img width="1000" height="600" alt="Figure_1" src="https://github.com/user-attachments/assets/e79e2d10-eaa1-4fdd-aa54-d4075fd38e10" />
 <img width="1000" height="600" alt="Figure_2" src="https://github.com/user-attachments/assets/8c82f692-8907-4844-b4f5-c4451ddf5301" />
+<img width="1000" height="600" alt="MCST BPMD" src="https://github.com/user-attachments/assets/875f1da5-6243-4f21-837c-22900f4903d1" />
+
 The small board size makes it so that there is a remarkable advantage for the first mover.
