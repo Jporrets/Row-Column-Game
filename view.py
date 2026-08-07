@@ -54,6 +54,7 @@ class GameGUI:
                     command=lambda r=r, c=c: self.on_click(r, c)
                 )
                 btn.grid(row=r, column=c, padx=2, pady=2)
+                btn.default_bg = btn.cget("bg")
                 self.buttons[r][c] = btn
 
     def highlight_buttons(self):
@@ -63,7 +64,7 @@ class GameGUI:
             for c in range(self.board.cols):
                 btn = self.buttons[r][c]
                 if btn["state"] != "disabled":
-                    btn.config(bg="SystemButtonFace")
+                    btn.config(bg=btn.default_bg)
         
         available_moves = self.board.available_moves_array()
         last_move = self.board.last_move
@@ -117,8 +118,8 @@ class GameGUI:
 
     def get_agent_move(self):
         """Get the agent's move if it's the agent's turn."""
-        # Small delay for better UX
-        time.sleep(0.5)
+        # Small delay for better UX: replaced sleep with after to avoid freezing the UI
+        self.master.after(500, self.get_agent_move)
 
         if not self.board.is_there_move_possible():
             print('No moves available, skipping agent turn...')
